@@ -1,0 +1,16 @@
+div{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button{
+    color: black;
+    background-color: #e44405;
+    border-radius: 20%;
+}
+
+.signUpError{
+    width: 180px;
+    color: #e44405;
+}
