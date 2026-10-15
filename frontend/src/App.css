@@ -1,27 +1,10 @@
-#center {
+.app-page {
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-}
-#center hr {
-  border: none;
-  border-top: 2px solid black;
-  width: 100%;
-  margin: 20px auto;
-} 
-
-li.invisible {
-  display: none;
-}
-
-.completed{
-  text-decoration: line-through;
-  color: green;
-}
-
-.prof{
-  color: rgb(35, 151, 218);
-  justify-content:end;
+  align-items: center;
+  justify-content: center;
+  background-image: url("../src/assets/app-bg3.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }

@@ -1,0 +1,10 @@
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-image: url("./assets/login-bg3.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

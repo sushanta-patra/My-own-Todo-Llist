@@ -4,11 +4,12 @@ import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import Todo from "../models/Todo.js";
 import protect from "../middleware/authMiddleware.js";
+import authorizeCheck from "../middleware/authorizationCheck.js";
 
 const router = express.Router();
 
 // GET all todos
-router.get("/todos",protect, async (req, res) => {
+router.get("/todos",protect,authorizeCheck("user", "admin"), async (req, res) => {
     try {
         const data = await Todo.find();
 
@@ -23,7 +24,7 @@ router.get("/todos",protect, async (req, res) => {
 
 
 // POST todo
-router.post("/todos",protect, async (req, res) => {
+router.post("/todos",protect,authorizeCheck("user", "admin"), async (req, res) => {
     try {
         const newTodo = await Todo.create({
             title: req.body.title,
@@ -39,7 +40,7 @@ router.post("/todos",protect, async (req, res) => {
 });
 
 // PATCH todo
-router.patch("/todos/:id",protect, async (req, res) => {
+router.patch("/todos/:id",protect,authorizeCheck("user", "admin"), async (req, res) => {
     try {
         const id = req.params.id;
         const { isDone } = req.body;
@@ -63,8 +64,32 @@ router.patch("/todos/:id",protect, async (req, res) => {
     }
 });
 
+router.patch("/todos/edit/:id",protect,authorizeCheck("admin"), async (req, res) => {
+    try {
+        const id = req.params.id;
+        const {title} = req.body;
+
+        const updatedTodo = await Todo.findByIdAndUpdate(
+            id,
+            {
+                title: title
+            },
+            {
+                returnDocument: "after"
+            }
+        );
+
+        res.status(200).json(updatedTodo);
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message
+        });
+    }
+});
+
 // DELETE todo
-router.delete("/todos/:id",protect, async (req, res) => {
+router.delete("/todos/:id",protect,authorizeCheck("admin"), async (req, res) => {
     try {
         const delId = req.params.id;
 

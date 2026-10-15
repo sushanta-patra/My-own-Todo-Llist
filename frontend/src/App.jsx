@@ -1,107 +1,131 @@
-import "./App.css";
-import React from "react";
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./App.css"
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Container,
+  Paper,
+  Stack,
+  TextField,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  Checkbox,
+  Box,
+} from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 function App() {
   const location = useLocation();
+  const navigate = useNavigate();
   const user = location.state?.user;
-  let [todoList, setTodoList] = useState([]);
 
-  let [task, setTask] = useState("");
+  const [todoList, setTodoList] = useState([]);
+  const [task, setTask] = useState("");
+  const [taskId, setTaskId] = useState(null);
+  const [taskError, setTaskError] = useState("");
 
+  // Fetch todos ONCE when the page loads (your old [todoList] caused an endless loop)
   useEffect(() => {
     const getTodos = async () => {
-      const response = await axios.get("http://localhost:5000/api/auth/todos", {
-        withCredentials: true,
-      });
-      setTodoList(response.data);
+      try {
+        const response = await axios.get("http://localhost:5000/api/auth/todos", {
+          withCredentials: true,
+        });
+        setTodoList(response.data);
+      } catch (error) {
+        console.error("Fetch failed:", error.response?.data || error.message);
+      }
     };
     getTodos();
-  }, [todoList]);
-
-  const navigate = useNavigate();
+  }, []);
 
   const handleLogout = async () => {
     try {
       await axios.post(
         "http://localhost:5000/api/auth/logout",
         {},
-        {
-          withCredentials: true,
-        },
+        { withCredentials: true }
       );
-
       navigate("/", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error.response?.data || error.message);
     }
   };
 
-  let addTask = async () => {
-    if (task.trim() !== "") {
+  const addTask = async () => {
+    if (task.trim() === "") {
+      setTaskError("Enter your task please");
+      return;
+    }
+    setTaskError("");
+
+    if (taskId === null) {
       try {
         const response = await axios.post(
           "http://localhost:5000/api/auth/todos",
-          {
-            title: task,
-            isDone: false,
-          },
-          {
-            withCredentials: true,
-          },
+          { title: task, isDone: false },
+          { withCredentials: true }
         );
         setTodoList([...todoList, response.data]);
-        setTask("");
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      try {
+        const response = await axios.patch(
+          `http://localhost:5000/api/auth/todos/edit/${taskId}`,
+          { title: task },
+          { withCredentials: true }
+        );
+        setTodoList(
+          todoList.map((todo) => (todo._id === taskId ? response.data : todo))
+        );
       } catch (error) {
         console.log(error);
       }
     }
+    setTaskId(null);
+    setTask("");
   };
 
-  let removeTodo = async (id) => {
+  const removeTodo = async (id) => {
     try {
-      let response = await axios.delete(
-        `http://localhost:5000/api/auth/todos/${id}`,
-        {
-          withCredentials: true,
-        },
-      );
-      console.log(response.data);
+      await axios.delete(`http://localhost:5000/api/auth/todos/${id}`, {
+        withCredentials: true,
+      });
+      setTodoList(todoList.filter((todo) => todo._id !== id));
     } catch (error) {
       console.log(error);
     }
   };
 
-  let todoMark = async (key) => {
-    const todo = todoList.find((todo) => todo._id === key);
+  const editTodo = (id) => {
+    const todo = todoList.find((todo) => todo._id === id);
+    if (!todo) return;
+    setTaskId(todo._id);
+    setTask(todo.title);
+  };
 
-    const newIsDone = !todo.isDone;
+  const todoMark = async (key) => {
+    const todo = todoList.find((todo) => todo._id === key);
+    if (!todo) return;
 
     try {
-      // Send new isDone value to backend
       const response = await axios.patch(
         `http://localhost:5000/api/auth/todos/${key}`,
-        {
-          isDone: newIsDone,
-        },
-        {
-          withCredentials: true,
-        },
+        { isDone: !todo.isDone },
+        { withCredentials: true }
       );
-
-      // Update frontend with MongoDB response
       setTodoList(
-        todoList.map((todo) => {
-          if (todo._id === key) {
-            return response.data;
-          }
-
-          return todo;
-        }),
+        todoList.map((todo) => (todo._id === key ? response.data : todo))
       );
     } catch (error) {
       console.log(error);
@@ -109,63 +133,83 @@ function App() {
   };
 
   return (
-    <>
-      <div className="nav-bar">
-        <div className="prof">
-          <div className="profile-log">{`Hi ${user?.name || "User"}!`}</div>
-          <div className="log-out">
-            <button onClick={handleLogout}>
-              &nbsp;&nbsp;<i class="fa-solid fa-right-from-bracket"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-      <section id="center">
-        <input
-          type="text"
-          placeholder="Add a new todo..."
-          style={{ padding: "10px", borderRadius: "5px" }}
-          onChange={(e) => {
-            setTask(e.target.value);
-          }}
-          value={task}
-        ></input>
-        <br />
-        <button
-          style={{
-            padding: "10px",
-            borderRadius: "5px",
-            background: "lightblue",
-          }}
-          onClick={addTask}
-        >
-          Add Task
-        </button>
-        <hr />
-        <h1 style={{ textDecoration: "underline" }}>Todo List</h1>
-        <ul style={{ listStyleType: "none" }}>
-          {todoList.map((todo) => {
-            return (
-              <li key={todo._id}>
-                <input
-                  type="checkbox"
-                  checked={todo.isDone}
+    <div className="app-page">
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f7fa" }}>
+      <AppBar position="static">
+        <Toolbar>
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            {`Hi ${user?.name || "User"}!`}
+          </Typography>
+          <IconButton color="inherit" onClick={handleLogout} aria-label="logout">
+            <LogoutIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="sm" sx={{ mt: 4 }}>
+        <Paper elevation={3} sx={{ p: 3, bgcolor: "rgba(255,255,255,0.92)", borderRadius: 3 }}>
+          <Stack direction="row" spacing={1}>
+            <TextField
+              label="Add or Update todo"
+              value={task}
+              onChange={(e) => setTask(e.target.value)}
+              error={Boolean(taskError)}
+              helperText={taskError}
+              fullWidth
+              size="small"
+            />
+            <Button variant="contained" onClick={addTask}>
+              {taskId === null ? "Add" : "Update"}
+            </Button>
+          </Stack>
+
+          <Typography variant="h5" sx={{ mt: 3 }}>
+            Todo List
+          </Typography>
+
+          <List>
+            {todoList.length === 0 && (
+              <Typography color="text.secondary">No todos yet.</Typography>
+            )}
+
+            {todoList.map((todo) => (
+              <ListItem
+                key={todo._id}
+                disableGutters
+                secondaryAction={
+                  <>
+                    <IconButton onClick={() => editTodo(todo._id)} aria-label="edit">
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      color="error"
+                      onClick={() => removeTodo(todo._id)}
+                      aria-label="delete"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </>
+                }
+              >
+                <Checkbox
+                  checked={Boolean(todo.isDone)}
                   onChange={() => todoMark(todo._id)}
                 />
-                <span className={todo.isDone ? "completed" : ""}>
-                  {todo.title} &nbsp;
-                </span>
-                <button onClick={() => removeTodo(todo._id)}>
-                  <i className="fa-solid fa-trash-can"></i>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </section>
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+                <ListItemText
+                  primary={todo.title}
+                  sx={{
+                    textDecoration: todo.isDone ? "line-through" : "none",
+                    color: todo.isDone ? "text.secondary" : "text.primary",
+                    pr: 10,
+                  }}
+                />
+              </ListItem>
+            ))}
+          </List>
+        </Paper>
+      </Container>
+    </Box>
+    </div>
   );
 }
 

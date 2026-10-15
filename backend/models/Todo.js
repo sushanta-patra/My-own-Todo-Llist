@@ -10,7 +10,7 @@ const todoSchema = new mongoose.Schema(
             type: "Boolean",
             default: false
         }
-    },
+    }
 );
 
 const Todo = mongoose.model("Todo", todoSchema);

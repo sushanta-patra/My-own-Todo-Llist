@@ -2,96 +2,97 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./SignUp.css";
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  Alert,
+} from "@mui/material";
 
 function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error,setError]= useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
       const response = await axios.post(
         "http://localhost:5000/api/auth/signup",
-        {
-          name,
-          email,
-          password,
-        }
+        { name, email, password }
       );
 
       console.log(response.data);
-      
+
       setName("");
       setEmail("");
       setPassword("");
 
-
       navigate("/");
-
     } catch (error) {
       console.log(error.response?.data);
-      setError(error.response?.data.message);
+      setError(error.response?.data?.message || "Signup failed. Please try again.");
     }
   };
 
   return (
-    <div>
-      <div className="signUpError">{error}</div>
-      <form onSubmit={handleSignup}>
-        <div className="mb-2">
-          <label htmlFor="user-name" className="form-label">
-            Name
-          </label>
+    <div className="signup-page">
+    <Container maxWidth="xs">
+      <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
+        <Stack component="form" onSubmit={handleSignup} spacing={2}>
+          <Typography variant="h5" align="center">
+            Sign Up
+          </Typography>
 
-          <input
-            type="text"
-            className="form-control"
-            id="user-name"
+          {error && <Alert severity="error">{error}</Alert>}
+
+          <TextField
+            label="Name"
             placeholder="Enter user name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            fullWidth
+            required
           />
-        </div>
 
-        <div className="mb-2">
-          <label htmlFor="email" className="form-label">
-            Email
-          </label>
-
-          <input
+          <TextField
+            label="Email"
             type="email"
-            className="form-control"
-            id="email"
             placeholder="Enter your email Id..."
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            fullWidth
+            required
           />
-        </div>
 
-        <div className="mb-2">
-          <label htmlFor="password" className="form-label">
-            Password
-          </label>
-
-          <input
+          <TextField
+            label="Password"
             type="password"
-            className="form-control"
-            id="password"
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            fullWidth
+            required
           />
-        </div>
 
-        <button type="submit" className="btn btn-primary">
-          Sign Up
-        </button>
-      </form>
+          <Button type="submit" variant="contained" size="large">
+            Sign Up
+          </Button>
+
+          <Button variant="text" onClick={() => navigate("/signin")}>
+            Already have an account? Log In
+          </Button>
+        </Stack>
+      </Paper>
+    </Container>
     </div>
   );
 }

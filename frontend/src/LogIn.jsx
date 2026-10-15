@@ -1,81 +1,87 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "./login.css";
+import {
+  Container,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  Alert,
+} from "@mui/material";
 
-function LogIn() {
+function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
 
     try {
       const response = await axios.post(
         "http://localhost:5000/api/auth/login",
-        {
-          email,
-          password,
-        },
-        {
-          withCredentials: true,
-        },
+        { email, password },
+        { withCredentials: true }
       );
       console.log(response.data);
       navigate("/app", {
-        state: {
-          user: response.data.user,
-        },
+        state: { user: response.data.user },
       });
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);
+      setError(error.response?.data?.message || "Login failed. Please try again.");
     }
   };
 
   return (
-    <div>
-      <form onSubmit={handleLogin}>
-        <div className="mb-2">
-          <label htmlFor="email" className="form-label">
-            Email
-          </label>
-          <input
-            type="email"
-            className="form-control"
-            id="email"
-            placeholder="Enter your email Id..."
-            onChange={(e) => setEmail(e.target.value)}
-            value={email}
-          />
-        </div>
-        <div className="mb-2">
-          <label htmlFor="password" className="form-label">
-            Password
-          </label>
-          <input
-            type="password"
-            className="form-control"
-            id="password"
-            placeholder="Enter password"
-            onChange={(e) => setPassword(e.target.value)}
-            value={password}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          logIn
-        </button>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => navigate("/signup")}
-        >
-          Sign Up?
-        </button>
-      </form>
+    <div className="login-page">
+      <Container maxWidth="xs">
+        <Paper elevation={3} sx={{ p: 4, mt: 10 }}>
+          <Stack component="form" onSubmit={handleLogin} spacing={2}>
+            <Typography variant="h5" align="center">
+              Log In
+            </Typography>
+
+            {error && <Alert severity="error">{error}</Alert>}
+
+            <TextField
+              label="Email"
+              type="email"
+              placeholder="Enter your email Id..."
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              fullWidth
+              required
+            />
+
+            <TextField
+              label="Password"
+              type="password"
+              placeholder="Enter password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              fullWidth
+              required
+            />
+
+            <Button type="submit" variant="contained" size="large">
+              Log In
+            </Button>
+
+            <Button variant="text" onClick={() => navigate("/signup")}>
+              Don't have an account? Sign Up
+            </Button>
+          </Stack>
+        </Paper>
+      </Container>
     </div>
   );
 }
 
-export default LogIn;
+export default Login;

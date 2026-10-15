@@ -1,16 +1,11 @@
-div{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 
-button{
-    color: black;
-    background-color: #e44405;
-    border-radius: 20%;
-}
-
-.signUpError{
-    width: 180px;
-    color: #e44405;
+.signup-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("/src/assets/signup-bg4.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat; 
 }
