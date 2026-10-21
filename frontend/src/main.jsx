@@ -6,14 +6,20 @@ import Home from './SignUp.jsx'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import SignUp from './SignUp.jsx'
 import Login from './Login.jsx'
+import AdminDashboard from './AdminDashboard.jsx'
+import toast, { Toaster } from 'react-hot-toast';
 
 createRoot(document.getElementById('root')).render(
+  <>
   <BrowserRouter>
       <Routes>
         <Route path="/signup" element={<SignUp />} />
         <Route path="/app" element={<App />} />
         <Route path="/" element={<Login />} />
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/*" element={<Login />} />
       </Routes>
     </BrowserRouter>
+    <Toaster />
+  </>
 )
